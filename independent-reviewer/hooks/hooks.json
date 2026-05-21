@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "codex exec \"review changes since last commit and write results to a file named planning/REVIEW.md. Overwrite any preexisting file with the same name.\""
+          }
+        ]
+      }
+    ]
+  }
+}
