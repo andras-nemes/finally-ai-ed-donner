@@ -122,21 +122,22 @@ class TestPortfolioEndpoints:
         assert resp.status_code == 422
 
     def test_trade_ticker_normalized(self, client):
+        # At this point: bought 5 AAPL, sold 2 → 3 shares remaining
+        # Selling 1 with lowercase ticker should succeed and return normalized ticker
         resp = client.post(
             "/api/portfolio/trade",
             json={"ticker": "aapl", "quantity": 1, "side": "sell"},
         )
-        # lowercase ticker should be normalized; may succeed or fail based on state
-        # but should not be a validation error
-        assert resp.status_code in (200, 422)  # 422 if not enough shares
+        assert resp.status_code == 200
+        assert resp.json()["trade"]["ticker"] == "AAPL"
 
     def test_portfolio_history_has_entries(self, client):
         resp = client.get("/api/portfolio/history")
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data, list)
-        # After trades above, there should be at least some snapshots
-        assert len(data) >= 0
+        # After trades above, snapshots should have been recorded
+        assert len(data) >= 1
 
 
 # ---------------------------------------------------------------------------
