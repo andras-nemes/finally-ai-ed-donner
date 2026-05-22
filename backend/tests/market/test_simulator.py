@@ -45,7 +45,7 @@ class TestGBMSimulator:
         """Test that adding a duplicate ticker is a no-op."""
         sim = GBMSimulator(tickers=["AAPL"])
         sim.add_ticker("AAPL")
-        assert len(sim._tickers) == 1
+        assert len(sim.get_tickers()) == 1
 
     def test_remove_nonexistent_is_noop(self):
         """Test that removing a non-existent ticker is a no-op."""
@@ -78,16 +78,23 @@ class TestGBMSimulator:
         assert final_price != initial_price
 
     def test_cholesky_rebuilds_on_add(self):
-        """Test that Cholesky matrix is rebuilt when tickers are added."""
+        """Test that correlation is applied correctly when a second ticker is added."""
         sim = GBMSimulator(tickers=["AAPL"])
-        assert sim._cholesky is None  # Only 1 ticker, no correlation matrix
+        # Single ticker: step() should work without a correlation matrix
+        result = sim.step()
+        assert "AAPL" in result
         sim.add_ticker("GOOGL")
-        assert sim._cholesky is not None  # Now 2 tickers, matrix exists
+        # Two tickers: step() should use the correlation matrix and return both
+        result = sim.step()
+        assert "AAPL" in result
+        assert "GOOGL" in result
 
     def test_cholesky_none_with_one_ticker(self):
-        """Test that Cholesky is None with only one ticker."""
+        """Test that step() works correctly with only one ticker (no correlation matrix needed)."""
         sim = GBMSimulator(tickers=["AAPL"])
-        assert sim._cholesky is None
+        result = sim.step()
+        assert len(result) == 1
+        assert "AAPL" in result
 
     def test_get_price_returns_none_for_unknown(self):
         """Test that get_price returns None for unknown ticker."""

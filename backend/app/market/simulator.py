@@ -145,6 +145,7 @@ class GBMSimulator:
 
     def _add_ticker_internal(self, ticker: str) -> None:
         """Add a ticker without rebuilding Cholesky (for batch initialization)."""
+        ticker = ticker.upper().strip()
         if ticker in self._prices:
             return
         self._tickers.append(ticker)
@@ -169,7 +170,11 @@ class GBMSimulator:
                 corr[i, j] = rho
                 corr[j, i] = rho
 
-        self._cholesky = np.linalg.cholesky(corr)
+        try:
+            self._cholesky = np.linalg.cholesky(corr)
+        except np.linalg.LinAlgError:
+            logger.warning("Correlation matrix not positive definite; using identity")
+            self._cholesky = None
 
     @staticmethod
     def _pairwise_correlation(t1: str, t2: str) -> float:
@@ -240,6 +245,7 @@ class SimulatorDataSource(MarketDataSource):
         logger.info("Simulator stopped")
 
     async def add_ticker(self, ticker: str) -> None:
+        ticker = ticker.upper().strip()
         if self._sim:
             self._sim.add_ticker(ticker)
             # Seed cache immediately so the ticker has a price right away

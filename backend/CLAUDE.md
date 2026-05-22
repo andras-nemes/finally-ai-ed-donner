@@ -70,12 +70,7 @@ from app.market import PriceCache, PriceUpdate, MarketDataSource, create_market_
 
 ### SSE Streaming
 
-```python
-from app.market import create_stream_router
-
-router = create_stream_router(price_cache)  # Returns FastAPI APIRouter
-# Endpoint: GET /api/stream/prices (text/event-stream)
-```
+The SSE endpoint `GET /api/stream/prices` is implemented inline in `app/main.py`. It streams all ticker prices every ~500ms using the shared `PriceCache` from `app.state`.
 
 ### Seed Data
 
